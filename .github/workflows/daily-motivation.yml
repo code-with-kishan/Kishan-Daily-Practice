@@ -1,0 +1,31 @@
+name: Daily Motivation
+
+on:
+  schedule:
+    # Runs every day at 00:00 UTC (adjust the time if needed)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  add-motivation:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      
+      - name: Add motivational line to README
+        run: python .github/scripts/add_motivation.py
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "🌟 Add daily motivation - $(date +%Y-%m-%d)" || echo "No changes to commit"
+          git push

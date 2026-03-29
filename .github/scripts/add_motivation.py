@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-Daily Motivation Script - Final Version
-Adds a random motivational quote to README.md
+Daily Motivation Script
 """
 
 import random
@@ -49,31 +48,40 @@ QUOTES = [
     "What we achieve inwardly will change outer reality. - Plutarch",
     "The mind is everything. What you think, you become. - Buddha",
     "Stop being afraid of what could go wrong and focus on what could go right. - Unknown",
+    "An unexamined life is not worth living. - Socrates",
+    "The only person you are destined to become is the person you decide to be. - Ralph Waldo Emerson",
+    "Excellence is not a destination; it is a continuous journey that never ends. - Brian Tracy",
+    "The secret of success is to do the common thing uncommonly well. - John D. Rockefeller",
 ]
 
 def main():
-    # Get date and quote
     today = datetime.now().strftime("%Y-%m-%d")
     quote = random.choice(QUOTES)
     
-    # Read README
     try:
         with open("README.md", "r", encoding="utf-8") as f:
             content = f.read()
     except FileNotFoundError:
         content = ""
     
-    # Format entry
-    entry = f"### 💪 Daily Motivation ({today})\n> {quote}\n"
+    entry = f"""
+### 💪 Daily Motivation ({today})
+> **{quote}**
+"""
     
-    # Update README
     if "## Daily Motivation" not in content:
-        new_content = f"## Daily Motivation\n\n{entry}\n---\n\n{content}"
+        header = """## Daily Motivation
+
+> Daily inspirational quotes to keep you motivated
+
+---
+"""
+        new_content = header + entry + "\n---\n\n" + content
     else:
         lines = content.split("\n")
         idx = None
         for i, line in enumerate(lines):
-            if line.strip() == "## Daily Motivation":
+            if "## Daily Motivation" in line:
                 idx = i + 1
                 break
         
@@ -81,14 +89,16 @@ def main():
             lines.insert(idx, entry)
             new_content = "\n".join(lines)
         else:
-            new_content = f"## Daily Motivation\n\n{entry}\n---\n\n{content}"
+            header = """## Daily Motivation
+
+> Daily inspirational quotes to keep you motivated
+
+---
+"""
+            new_content = header + entry + "\n---\n\n" + content
     
-    # Write README
     with open("README.md", "w", encoding="utf-8") as f:
         f.write(new_content)
-    
-    print(f"✅ Added motivation for {today}")
-    print(f"📝 Quote: {quote}")
 
 if __name__ == "__main__":
     main()

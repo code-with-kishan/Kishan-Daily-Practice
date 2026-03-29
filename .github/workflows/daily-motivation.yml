@@ -32,15 +32,27 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
       
-      - name: Configure git
+      - name: Configure git user as YOU
         if: steps.check_changes.outputs.changed == 'true'
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "code-with-kishan"
+          git config --global user.email "your-email@example.com"
       
-      - name: Commit and push
+      - name: Commit motivation
         if: steps.check_changes.outputs.changed == 'true'
         run: |
           git add README.md
-          git commit -m "✨ Daily Motivation - $(date +'%Y-%m-%d')"
-          git push
+          git commit -m "Add daily motivation - $(date +'%Y-%m-%d')"
+      
+      - name: Add enhancement
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          echo "" >> README.md
+          echo "⭐ Last updated: $(date +'%Y-%m-%d %H:%M')" >> README.md
+          git add README.md
+          git commit -m "Update timestamp"
+      
+      - name: Push commits
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git push origin main

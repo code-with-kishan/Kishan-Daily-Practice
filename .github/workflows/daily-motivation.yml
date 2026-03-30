@@ -11,119 +11,37 @@ jobs:
     
     permissions:
       contents: write
-      
+    
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
-          fetch-depth: 0
       
-      - name: Display Environment Info
-        run: |
-          echo "======================================"
-          echo "WORKFLOW ENVIRONMENT"
-          echo "======================================"
-          echo "Current Directory: $(pwd)"
-          echo "Current User: $(whoami)"
-          echo "Git Version: $(git --version)"
-          echo "Python Version: $(python3 --version)"
-          echo "======================================"
-          echo "Repository Info:"
-          git config --list | grep user
-          git remote -v
-          echo "======================================"
-          echo "Branch Info:"
-          git branch -a
-          git log --oneline -n 3
-          echo "======================================"
-      
-      - name: Set Up Git Configuration
-        run: |
-          echo "Setting git user..."
-          git config --global user.name "${{ vars.GIT_USER_NAME }}"
-          git config --global user.email "${{ vars.GIT_USER_EMAIL }}"
-          
-          echo "Verifying git config..."
-          git config user.name
-          git config user.email
-      
-      - name: Set Up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       
-      - name: Run DSA Automation Script (DIAGNOSTIC)
+      - name: Configure Git
         run: |
-          echo "======================================"
-          echo "RUNNING DIAGNOSTIC SCRIPT"
-          echo "======================================"
+          git config --global user.name "code-with-kishan"
+          git config --global user.email "knishad0004@gmail.com"
+      
+      - name: Run DSA Script
+        run: |
           python3 scripts/add_motivation.py
-          echo "======================================"
-          echo "Script completed"
-          echo "======================================"
       
-      - name: Check Files Created
+      - name: Add and Commit
         run: |
-          echo "======================================"
-          echo "FILES CHECK"
-          echo "======================================"
-          echo "Checking for solutions folder..."
-          if [ -d "solutions" ]; then
-            echo "✅ solutions/ folder exists"
-            echo "Contents:"
-            ls -la solutions/
-          else
-            echo "❌ solutions/ folder NOT found"
-          fi
-          
-          echo ""
-          echo "Checking README..."
-          if [ -f "README.md" ]; then
-            echo "✅ README.md exists"
-            echo "First 10 lines:"
-            head -n 10 README.md
-          else
-            echo "❌ README.md NOT found"
-          fi
-          echo "======================================"
+          git add -A
+          git commit -m "Day $(date +%d-%m-%Y): Daily DSA Practice" || true
       
-      - name: Check Git Status
+      - name: Push to Repository
         run: |
-          echo "======================================"
-          echo "GIT STATUS BEFORE PUSH"
-          echo "======================================"
-          git status
-          echo ""
-          echo "Recent commits:"
+          git push origin main || true
+      
+      - name: Verify
+        run: |
+          echo "Latest commits:"
           git log --oneline -n 5
-          echo "======================================"
-      
-      - name: Push Commits to Repository
-        run: |
-          echo "======================================"
-          echo "PUSHING TO REMOTE"
-          echo "======================================"
-          
-          if git diff --quiet HEAD; then
-            echo "⚠️  No changes to push"
-          else
-            echo "📝 Changes detected, pushing..."
-            git push origin main -v
-          fi
-          
-          echo "======================================"
-      
-      - name: Final Verification
-        run: |
-          echo "======================================"
-          echo "FINAL VERIFICATION"
-          echo "======================================"
-          echo "Final log:"
-          git log --oneline -n 5
-          echo ""
-          echo "Files in repo:"
-          find . -type f -name "*.py" | head -10
-          echo "======================================"
-          echo "✅ Workflow completed!"
-          echo "======================================"

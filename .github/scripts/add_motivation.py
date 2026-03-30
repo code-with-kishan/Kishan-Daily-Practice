@@ -3,6 +3,7 @@ import os
 import random
 import datetime
 import subprocess
+import sys
 from pathlib import Path
 
 # DSA problems and solutions
@@ -117,29 +118,33 @@ MOTIVATIONS = [
 
 def get_day_number():
     """Calculate which day we're on based on when script started"""
-    # You can store the start date in a file or environment variable
     start_date_file = ".dsa_start_date"
     
-    if os.path.exists(start_date_file):
-        with open(start_date_file, 'r') as f:
-            start_date = datetime.datetime.strptime(f.read().strip(), "%Y-%m-%d").date()
-    else:
-        start_date = datetime.datetime.now().date()
-        with open(start_date_file, 'w') as f:
-            f.write(start_date.strftime("%Y-%m-%d"))
-    
-    today = datetime.datetime.now().date()
-    day_number = (today - start_date).days + 1
-    return day_number
+    try:
+        if os.path.exists(start_date_file):
+            with open(start_date_file, 'r') as f:
+                start_date = datetime.datetime.strptime(f.read().strip(), "%Y-%m-%d").date()
+        else:
+            start_date = datetime.datetime.now().date()
+            with open(start_date_file, 'w') as f:
+                f.write(start_date.strftime("%Y-%m-%d"))
+        
+        today = datetime.datetime.now().date()
+        day_number = (today - start_date).days + 1
+        return day_number
+    except Exception as e:
+        print(f"Error calculating day: {e}")
+        return 1
 
 def create_dsa_file(problem, day_num):
     """Create a DSA solution file"""
-    dsa_dir = Path("solutions")
-    dsa_dir.mkdir(exist_ok=True)
-    
-    filename = dsa_dir / f"day_{day_num}_solution.py"
-    
-    content = f"""# Day {day_num} - {problem['title']} Solution
+    try:
+        dsa_dir = Path("solutions")
+        dsa_dir.mkdir(exist_ok=True)
+        
+        filename = dsa_dir / f"day_{day_num}_solution.py"
+        
+        content = f"""# Day {day_num} - {problem['title']} Solution
 # Solved on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 {problem['code']}
@@ -149,85 +154,132 @@ if __name__ == "__main__":
     # Add test cases here
     pass
 """
-    
-    with open(filename, 'w') as f:
-        f.write(content)
-    
-    return filename
+        
+        with open(filename, 'w') as f:
+            f.write(content)
+        
+        print(f"✅ Created: {filename}")
+        return filename
+    except Exception as e:
+        print(f"❌ Error creating DSA file: {e}")
+        return None
 
 def update_readme(day_num, motivation):
     """Update README with daily motivation and streak"""
-    readme_file = Path("README.md")
-    
-    if not readme_file.exists():
+    try:
+        readme_file = Path("README.md")
+        
+        if not readme_file.exists():
+            with open(readme_file, 'w') as f:
+                f.write("# DSA Journey\n\n")
+                f.write("## Daily Motivation & Progress\n\n")
+        
+        with open(readme_file, 'r') as f:
+            content = f.read()
+        
+        # Add new entry at the beginning
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
+        new_entry = f"**Day {day_num}** ({date}): {motivation}\n\n"
+        
+        # Insert after the header
+        parts = content.split("## Daily Motivation & Progress\n\n", 1)
+        updated_content = parts[0] + "## Daily Motivation & Progress\n\n" + new_entry + (parts[1] if len(parts) > 1 else "")
+        
         with open(readme_file, 'w') as f:
-            f.write("# DSA Journey\n\n")
-            f.write("## Daily Motivation & Progress\n\n")
-    
-    with open(readme_file, 'r') as f:
-        content = f.read()
-    
-    # Add new entry at the beginning
-    date = datetime.datetime.now().strftime("%Y-%m-%d")
-    new_entry = f"**Day {day_num}** ({date}): {motivation}\n\n"
-    
-    # Insert after the header
-    parts = content.split("## Daily Motivation & Progress\n\n", 1)
-    updated_content = parts[0] + "## Daily Motivation & Progress\n\n" + new_entry + (parts[1] if len(parts) > 1 else "")
-    
-    with open(readme_file, 'w') as f:
-        f.write(updated_content)
+            f.write(updated_content)
+        
+        print(f"✅ Updated: README.md")
+        return True
+    except Exception as e:
+        print(f"❌ Error updating README: {e}")
+        return False
 
 def git_commit(filename, message, day_num):
     """Make a git commit"""
     try:
         subprocess.run(['git', 'add', str(filename)], check=True, capture_output=True)
-        subprocess.run(['git', 'commit', '-m', message], check=True, capture_output=True)
-        print(f"✅ Committed: {message}")
+        result = subprocess.run(['git', 'commit', '-m', message], capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            print(f"✅ Committed: {message}")
+            return True
+        else:
+            print(f"⚠️  Commit message: {result.stdout}")
+            return False
     except subprocess.CalledProcessError as e:
         print(f"❌ Git commit failed: {e}")
+        return False
+    except Exception as e:
+        print(f"❌ Unexpected error in git_commit: {e}")
+        return False
 
 def main():
-    # Get current day number
-    day_num = get_day_number()
-    
-    # Random number of commits (2-5)
-    num_commits = random.randint(2, 5)
-    
-    print(f"🚀 Day {day_num} - Starting {num_commits} commits...")
-    
-    for commit_idx in range(num_commits):
-        # Random DSA problem
-        problem = random.choice(DSA_PROBLEMS)
+    try:
+        print("🚀 Starting DSA Automation Script...")
         
-        # Create solution file
-        solution_file = create_dsa_file(problem, f"{day_num}_{commit_idx + 1}")
+        # Get current day number
+        day_num = get_day_number()
+        print(f"📅 Day {day_num}")
         
-        # Commit message with natural feel
-        commit_messages = [
-            f"Solved {problem['title']} - DSA practice #{commit_idx + 1}",
-            f"Day {day_num}: Working on {problem['title']} solution",
-            f"Added {problem['title']} algorithm - Day {day_num}",
-            f"DSA Challenge: Implementing {problem['title']}",
-            f"Day {day_num} progress: {problem['title']} complete",
-        ]
+        # Random number of commits (2-5)
+        num_commits = random.randint(2, 5)
+        print(f"📝 Will create {num_commits} commits today")
         
-        commit_msg = random.choice(commit_messages)
+        commits_made = 0
         
-        # Make commit
-        git_commit(solution_file, commit_msg, day_num)
+        for commit_idx in range(num_commits):
+            try:
+                # Random DSA problem
+                problem = random.choice(DSA_PROBLEMS)
+                
+                # Create solution file
+                solution_file = create_dsa_file(problem, f"{day_num}_{commit_idx + 1}")
+                
+                if solution_file is None:
+                    print(f"⚠️  Skipping commit {commit_idx + 1}")
+                    continue
+                
+                # Commit message with natural feel
+                commit_messages = [
+                    f"Solved {problem['title']} - DSA practice #{commit_idx + 1}",
+                    f"Day {day_num}: Working on {problem['title']} solution",
+                    f"Added {problem['title']} algorithm - Day {day_num}",
+                    f"DSA Challenge: Implementing {problem['title']}",
+                    f"Day {day_num} progress: {problem['title']} complete",
+                ]
+                
+                commit_msg = random.choice(commit_messages)
+                
+                # Make commit
+                if git_commit(solution_file, commit_msg, day_num):
+                    commits_made += 1
+                
+                # Random delay between commits (to look natural)
+                if commit_idx < num_commits - 1:
+                    import time
+                    time.sleep(random.randint(2, 5))
+            
+            except Exception as e:
+                print(f"❌ Error in commit {commit_idx + 1}: {e}")
+                continue
         
-        # Random delay between commits (to look natural)
-        if commit_idx < num_commits - 1:
-            import time
-            time.sleep(random.randint(2, 8))
+        # Update README with motivation
+        try:
+            motivation = random.choice(MOTIVATIONS)
+            update_readme(day_num, motivation)
+            git_commit("README.md", f"Day {day_num}: {motivation}", day_num)
+            commits_made += 1
+        except Exception as e:
+            print(f"❌ Error updating motivation: {e}")
+        
+        print(f"\n✅ Script completed! Made {commits_made} commits on Day {day_num}")
+        return 0
     
-    # Update README with motivation
-    motivation = random.choice(MOTIVATIONS)
-    update_readme(day_num, motivation)
-    git_commit("README.md", f"Day {day_num}: {motivation}", day_num)
-    
-    print(f"✅ Day {day_num} Complete! {num_commits} commits + motivation update")
+    except Exception as e:
+        print(f"❌ Fatal error: {e}")
+        import traceback
+        traceback.print_exc()
+        return 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

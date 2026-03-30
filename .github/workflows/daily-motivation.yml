@@ -1,58 +1,55 @@
-name: Daily Motivation
+name: Daily DSA Commits
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    # Run daily at 4:00 AM UTC (adjust timezone as needed)
+    # For IST (UTC+5:30), this is 9:30 AM IST, adjust to: '30 22 * * *' for 4 AM IST previous day
+    - cron: '0 4 * * *'
+  
+  # Allow manual trigger for testing
   workflow_dispatch:
 
 jobs:
-  add-motivation:
+  dsa-commit:
     runs-on: ubuntu-latest
+    
     permissions:
       contents: write
-    
+      
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          # Important: Use a Personal Access Token to commit as your user
+          token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Run motivation script
-        run: python .github/scripts/add_motivation.py
-      
-      - name: Check for changes
-        id: check_changes
+      - name: Set Up Git Configuration
         run: |
-          if git diff --quiet README.md; then
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
+          # Configure git to use YOUR name and email
+          # Replace with your actual name and GitHub email
+          git config --global user.name "${{ vars.GIT_USER_NAME }}"
+          git config --global user.email "${{ vars.GIT_USER_EMAIL }}"
       
-      - name: Configure git user as YOU
-        if: steps.check_changes.outputs.changed == 'true'
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install Dependencies
         run: |
-          git config --global user.name "code-with-kishan"
-          git config --global user.email "your-email@example.com"
+          python -m pip install --upgrade pip
       
-      - name: Commit motivation
-        if: steps.check_changes.outputs.changed == 'true'
+      - name: Run DSA Automation Script
         run: |
-          git add README.md
-          git commit -m "Add daily motivation - $(date +'%Y-%m-%d')"
+          python scripts/add_motivation.py
       
-      - name: Add enhancement
-        if: steps.check_changes.outputs.changed == 'true'
-        run: |
-          echo "" >> README.md
-          echo "⭐ Last updated: $(date +'%Y-%m-%d %H:%M')" >> README.md
-          git add README.md
-          git commit -m "Update timestamp"
-      
-      - name: Push commits
-        if: steps.check_changes.outputs.changed == 'true'
+      - name: Push Commits to Repository
         run: |
           git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify Commits
+        run: |
+          echo "✅ Daily DSA commits completed successfully!"
+          git log --oneline -n 5

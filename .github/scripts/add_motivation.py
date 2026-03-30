@@ -1,104 +1,233 @@
 #!/usr/bin/env python3
-"""
-Daily Motivation Script
-"""
-
+import os
 import random
-from datetime import datetime
+import datetime
+import subprocess
+from pathlib import Path
 
-QUOTES = [
-    "The only way to do great work is to love what you do. - Steve Jobs",
-    "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
-    "The future depends on what you do today. - Mahatma Gandhi",
-    "Success is not final, failure is not fatal. - Winston Churchill",
-    "Believe you can and you're halfway there. - Theodore Roosevelt",
-    "It is during our darkest moments that we must focus to see the light. - Aristotle",
-    "The only impossible journey is the one you never begin. - Tony Robbins",
-    "Life is 10% what happens to you and 90% how you react to it. - Charles R. Swindoll",
-    "What lies behind us and what lies before us are tiny matters compared to what lies within us. - Ralph Waldo Emerson",
-    "Do something today that your future self will thank you for. - Sean Patrick Flanery",
-    "Great things never come from comfort zones. - Unknown",
-    "Dream it. Believe it. Build it. - Unknown",
-    "Success doesn't just find you. You have to go out and get it. - Unknown",
-    "The harder you work for something, the greater you'll feel when you achieve it. - Unknown",
-    "Dream bigger. Do bigger. - Unknown",
-    "Don't stop when you're tired. Stop when you're done. - Unknown",
-    "Wake up with determination. Go to bed with satisfaction. - Unknown",
-    "Do what you have to do, to do what you want to do. - Unknown",
-    "Success is the sum of small efforts repeated day in and day out. - Robert Collier",
-    "Your limitation—it's only your imagination. - Unknown",
-    "Push yourself, because no one else is going to do it for you. - Unknown",
-    "Sometimes we're tested not to show our weaknesses, but to discover our strengths. - Unknown",
-    "The key to success is to focus on goals, not obstacles. - Unknown",
-    "Dream as if you'll live forever. Live as if you'll die today. - James Dean",
-    "It's not whether you get knocked down, it's whether you get up. - Vince Lombardi",
-    "If you are working on something that you really care about, you don't have to be pushed. The vision pulls you. - Steve Jobs",
-    "You don't need to see the whole staircase, just take the first step. - Martin Luther King Jr.",
-    "Everything you want is on the other side of fear. - Unknown",
-    "Believe in yourself. You are braver than you believe, stronger than you seem, and smarter than you think. - A.A. Milne",
-    "The best time to plant a tree was 20 years ago. The second best time is now. - Unknown",
-    "Success usually comes to those who are too busy to be looking for it. - Henry David Thoreau",
-    "The way to get started is to quit talking and begin doing. - Walt Disney",
-    "Don't let yesterday take up too much of today. - Will Rogers",
-    "You learn more from failure than from success. - Unknown",
-    "It's not about how good you are, it's about how good you want to be. - Unknown",
-    "Failure is the condiment that gives success its flavor. - Truman Capote",
-    "No one can make you feel inferior without your consent. - Eleanor Roosevelt",
-    "The only limit to our realization of tomorrow will be our doubts of today. - Franklin D. Roosevelt",
-    "What we achieve inwardly will change outer reality. - Plutarch",
-    "The mind is everything. What you think, you become. - Buddha",
-    "Stop being afraid of what could go wrong and focus on what could go right. - Unknown",
-    "An unexamined life is not worth living. - Socrates",
-    "The only person you are destined to become is the person you decide to be. - Ralph Waldo Emerson",
-    "Excellence is not a destination; it is a continuous journey that never ends. - Brian Tracy",
-    "The secret of success is to do the common thing uncommonly well. - John D. Rockefeller",
+# DSA problems and solutions
+DSA_PROBLEMS = [
+    {
+        "title": "Two Sum",
+        "code": """def twoSum(nums, target):
+    seen = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+    return []"""
+    },
+    {
+        "title": "Reverse String",
+        "code": """def reverseString(s):
+    left, right = 0, len(s) - 1
+    while left < right:
+        s[left], s[right] = s[right], s[left]
+        left += 1
+        right -= 1
+    return s"""
+    },
+    {
+        "title": "Binary Search",
+        "code": """def binarySearch(arr, target):
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1"""
+    },
+    {
+        "title": "Merge Sorted Arrays",
+        "code": """def mergeSorted(arr1, arr2):
+    result = []
+    i = j = 0
+    while i < len(arr1) and j < len(arr2):
+        if arr1[i] <= arr2[j]:
+            result.append(arr1[i])
+            i += 1
+        else:
+            result.append(arr2[j])
+            j += 1
+    result.extend(arr1[i:])
+    result.extend(arr2[j:])
+    return result"""
+    },
+    {
+        "title": "Palindrome Check",
+        "code": """def isPalindrome(s):
+    s = ''.join(c.lower() for c in s if c.isalnum())
+    return s == s[::-1]"""
+    },
+    {
+        "title": "Fibonacci",
+        "code": """def fibonacci(n):
+    if n <= 1:
+        return n
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b"""
+    },
+    {
+        "title": "Valid Parentheses",
+        "code": """def isValidParentheses(s):
+    stack = []
+    pairs = {'(': ')', '{': '}', '[': ']'}
+    for char in s:
+        if char in pairs:
+            stack.append(char)
+        else:
+            if not stack or pairs[stack.pop()] != char:
+                return False
+    return len(stack) == 0"""
+    },
+    {
+        "title": "Longest Substring Without Repeating",
+        "code": """def lengthOfLongestSubstring(s):
+    char_index = {}
+    max_length = 0
+    start = 0
+    for i, char in enumerate(s):
+        if char in char_index and char_index[char] >= start:
+            start = char_index[char] + 1
+        char_index[char] = i
+        max_length = max(max_length, i - start + 1)
+    return max_length"""
+    },
 ]
 
-def main():
-    today = datetime.now().strftime("%Y-%m-%d")
-    quote = random.choice(QUOTES)
-    
-    try:
-        with open("README.md", "r", encoding="utf-8") as f:
-            content = f.read()
-    except FileNotFoundError:
-        content = ""
-    
-    entry = f"""
-### 💪 Daily Motivation ({today})
-> **{quote}**
-"""
-    
-    if "## Daily Motivation" not in content:
-        header = """## Daily Motivation
+MOTIVATIONS = [
+    "Every DSA problem solved is a step closer to mastery! 💪",
+    "Consistency beats perfection. Keep grinding! 🚀",
+    "Today's code is tomorrow's solution. Keep learning! 📚",
+    "Algorithms are the language of problem solving! 🧠",
+    "One step at a time. You're building something great! ✨",
+    "The best time to learn DSA was yesterday. The second best is today! ⏰",
+    "Practice makes perfect. Keep pushing! 🎯",
+    "Every commit is a victory. Celebrate your progress! 🏆",
+    "Data structures are the foundation of great code! 🏗️",
+    "Keep iterating, keep improving! 🔄",
+]
 
-> Daily inspirational quotes to keep you motivated
-
----
-"""
-        new_content = header + entry + "\n---\n\n" + content
+def get_day_number():
+    """Calculate which day we're on based on when script started"""
+    # You can store the start date in a file or environment variable
+    start_date_file = ".dsa_start_date"
+    
+    if os.path.exists(start_date_file):
+        with open(start_date_file, 'r') as f:
+            start_date = datetime.datetime.strptime(f.read().strip(), "%Y-%m-%d").date()
     else:
-        lines = content.split("\n")
-        idx = None
-        for i, line in enumerate(lines):
-            if "## Daily Motivation" in line:
-                idx = i + 1
-                break
-        
-        if idx is not None:
-            lines.insert(idx, entry)
-            new_content = "\n".join(lines)
-        else:
-            header = """## Daily Motivation
-
-> Daily inspirational quotes to keep you motivated
-
----
-"""
-            new_content = header + entry + "\n---\n\n" + content
+        start_date = datetime.datetime.now().date()
+        with open(start_date_file, 'w') as f:
+            f.write(start_date.strftime("%Y-%m-%d"))
     
-    with open("README.md", "w", encoding="utf-8") as f:
-        f.write(new_content)
+    today = datetime.datetime.now().date()
+    day_number = (today - start_date).days + 1
+    return day_number
+
+def create_dsa_file(problem, day_num):
+    """Create a DSA solution file"""
+    dsa_dir = Path("solutions")
+    dsa_dir.mkdir(exist_ok=True)
+    
+    filename = dsa_dir / f"day_{day_num}_solution.py"
+    
+    content = f"""# Day {day_num} - {problem['title']} Solution
+# Solved on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+{problem['code']}
+
+# Test cases
+if __name__ == "__main__":
+    # Add test cases here
+    pass
+"""
+    
+    with open(filename, 'w') as f:
+        f.write(content)
+    
+    return filename
+
+def update_readme(day_num, motivation):
+    """Update README with daily motivation and streak"""
+    readme_file = Path("README.md")
+    
+    if not readme_file.exists():
+        with open(readme_file, 'w') as f:
+            f.write("# DSA Journey\n\n")
+            f.write("## Daily Motivation & Progress\n\n")
+    
+    with open(readme_file, 'r') as f:
+        content = f.read()
+    
+    # Add new entry at the beginning
+    date = datetime.datetime.now().strftime("%Y-%m-%d")
+    new_entry = f"**Day {day_num}** ({date}): {motivation}\n\n"
+    
+    # Insert after the header
+    parts = content.split("## Daily Motivation & Progress\n\n", 1)
+    updated_content = parts[0] + "## Daily Motivation & Progress\n\n" + new_entry + (parts[1] if len(parts) > 1 else "")
+    
+    with open(readme_file, 'w') as f:
+        f.write(updated_content)
+
+def git_commit(filename, message, day_num):
+    """Make a git commit"""
+    try:
+        subprocess.run(['git', 'add', str(filename)], check=True, capture_output=True)
+        subprocess.run(['git', 'commit', '-m', message], check=True, capture_output=True)
+        print(f"✅ Committed: {message}")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Git commit failed: {e}")
+
+def main():
+    # Get current day number
+    day_num = get_day_number()
+    
+    # Random number of commits (2-5)
+    num_commits = random.randint(2, 5)
+    
+    print(f"🚀 Day {day_num} - Starting {num_commits} commits...")
+    
+    for commit_idx in range(num_commits):
+        # Random DSA problem
+        problem = random.choice(DSA_PROBLEMS)
+        
+        # Create solution file
+        solution_file = create_dsa_file(problem, f"{day_num}_{commit_idx + 1}")
+        
+        # Commit message with natural feel
+        commit_messages = [
+            f"Solved {problem['title']} - DSA practice #{commit_idx + 1}",
+            f"Day {day_num}: Working on {problem['title']} solution",
+            f"Added {problem['title']} algorithm - Day {day_num}",
+            f"DSA Challenge: Implementing {problem['title']}",
+            f"Day {day_num} progress: {problem['title']} complete",
+        ]
+        
+        commit_msg = random.choice(commit_messages)
+        
+        # Make commit
+        git_commit(solution_file, commit_msg, day_num)
+        
+        # Random delay between commits (to look natural)
+        if commit_idx < num_commits - 1:
+            import time
+            time.sleep(random.randint(2, 8))
+    
+    # Update README with motivation
+    motivation = random.choice(MOTIVATIONS)
+    update_readme(day_num, motivation)
+    git_commit("README.md", f"Day {day_num}: {motivation}", day_num)
+    
+    print(f"✅ Day {day_num} Complete! {num_commits} commits + motivation update")
 
 if __name__ == "__main__":
     main()

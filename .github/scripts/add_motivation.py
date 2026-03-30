@@ -116,24 +116,84 @@ MOTIVATIONS = [
     "Keep iterating, keep improving! 🔄",
 ]
 
+def log(msg, level="INFO"):
+    """Print logs with timestamp and level"""
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] [{level}] {msg}")
+
+def check_git_config():
+    """Check git configuration"""
+    log("=" * 60)
+    log("CHECKING GIT CONFIGURATION", "CHECK")
+    log("=" * 60)
+    
+    try:
+        result = subprocess.run(['git', 'config', '--list'], capture_output=True, text=True)
+        user_name = subprocess.run(['git', 'config', 'user.name'], capture_output=True, text=True)
+        user_email = subprocess.run(['git', 'config', 'user.email'], capture_output=True, text=True)
+        
+        log(f"Git User Name: {user_name.stdout.strip()}")
+        log(f"Git User Email: {user_email.stdout.strip()}")
+        
+        if user_name.stdout.strip() and user_email.stdout.strip():
+            log("✅ Git config is set correctly", "SUCCESS")
+            return True
+        else:
+            log("❌ Git config is NOT set correctly", "ERROR")
+            return False
+    except Exception as e:
+        log(f"❌ Error checking git config: {e}", "ERROR")
+        return False
+
+def check_repo_status():
+    """Check repository status"""
+    log("=" * 60)
+    log("CHECKING REPOSITORY STATUS", "CHECK")
+    log("=" * 60)
+    
+    try:
+        result = subprocess.run(['git', 'status'], capture_output=True, text=True)
+        log("Git Status Output:")
+        for line in result.stdout.split('\n'):
+            log(f"  {line}")
+        
+        result = subprocess.run(['git', 'log', '--oneline', '-n', '3'], capture_output=True, text=True)
+        log("Last 3 Commits:")
+        for line in result.stdout.split('\n'):
+            if line:
+                log(f"  {line}")
+        
+        return True
+    except Exception as e:
+        log(f"❌ Error checking repo status: {e}", "ERROR")
+        return False
+
 def get_day_number():
     """Calculate which day we're on based on when script started"""
+    log("=" * 60)
+    log("CALCULATING DAY NUMBER", "CHECK")
+    log("=" * 60)
+    
     start_date_file = ".dsa_start_date"
     
     try:
         if os.path.exists(start_date_file):
             with open(start_date_file, 'r') as f:
                 start_date = datetime.datetime.strptime(f.read().strip(), "%Y-%m-%d").date()
+            log(f"Found existing start date: {start_date}")
         else:
             start_date = datetime.datetime.now().date()
             with open(start_date_file, 'w') as f:
                 f.write(start_date.strftime("%Y-%m-%d"))
+            log(f"Created new start date: {start_date}")
         
         today = datetime.datetime.now().date()
         day_number = (today - start_date).days + 1
+        log(f"Today's date: {today}")
+        log(f"Day number: {day_number}", "SUCCESS")
         return day_number
     except Exception as e:
-        print(f"Error calculating day: {e}")
+        log(f"❌ Error calculating day: {e}", "ERROR")
         return 1
 
 def create_dsa_file(problem, day_num):
@@ -141,6 +201,7 @@ def create_dsa_file(problem, day_num):
     try:
         dsa_dir = Path("solutions")
         dsa_dir.mkdir(exist_ok=True)
+        log(f"Solutions directory: {dsa_dir.absolute()}")
         
         filename = dsa_dir / f"day_{day_num}_solution.py"
         
@@ -158,10 +219,10 @@ if __name__ == "__main__":
         with open(filename, 'w') as f:
             f.write(content)
         
-        print(f"✅ Created: {filename}")
+        log(f"✅ Created file: {filename.absolute()}", "SUCCESS")
         return filename
     except Exception as e:
-        print(f"❌ Error creating DSA file: {e}")
+        log(f"❌ Error creating DSA file: {e}", "ERROR")
         return None
 
 def update_readme(day_num, motivation):
@@ -170,6 +231,7 @@ def update_readme(day_num, motivation):
         readme_file = Path("README.md")
         
         if not readme_file.exists():
+            log("README.md not found, creating new one")
             with open(readme_file, 'w') as f:
                 f.write("# DSA Journey\n\n")
                 f.write("## Daily Motivation & Progress\n\n")
@@ -177,66 +239,121 @@ def update_readme(day_num, motivation):
         with open(readme_file, 'r') as f:
             content = f.read()
         
-        # Add new entry at the beginning
         date = datetime.datetime.now().strftime("%Y-%m-%d")
         new_entry = f"**Day {day_num}** ({date}): {motivation}\n\n"
         
-        # Insert after the header
         parts = content.split("## Daily Motivation & Progress\n\n", 1)
         updated_content = parts[0] + "## Daily Motivation & Progress\n\n" + new_entry + (parts[1] if len(parts) > 1 else "")
         
         with open(readme_file, 'w') as f:
             f.write(updated_content)
         
-        print(f"✅ Updated: README.md")
+        log(f"✅ Updated: {readme_file.absolute()}", "SUCCESS")
         return True
     except Exception as e:
-        print(f"❌ Error updating README: {e}")
+        log(f"❌ Error updating README: {e}", "ERROR")
         return False
 
-def git_commit(filename, message, day_num):
+def git_add_file(filename):
+    """Add file to git staging"""
+    try:
+        result = subprocess.run(['git', 'add', str(filename)], capture_output=True, text=True)
+        if result.returncode == 0:
+            log(f"✅ Added to git: {filename}")
+            return True
+        else:
+            log(f"❌ Failed to add {filename}: {result.stderr}", "ERROR")
+            return False
+    except Exception as e:
+        log(f"❌ Error adding file: {e}", "ERROR")
+        return False
+
+def git_commit(filename, message):
     """Make a git commit"""
     try:
-        subprocess.run(['git', 'add', str(filename)], check=True, capture_output=True)
+        # First add the file
+        if not git_add_file(filename):
+            return False
+        
+        # Then commit
         result = subprocess.run(['git', 'commit', '-m', message], capture_output=True, text=True)
         
         if result.returncode == 0:
-            print(f"✅ Committed: {message}")
+            log(f"✅ Committed: {message}", "SUCCESS")
+            # Show what was committed
+            result = subprocess.run(['git', 'log', '-1', '--oneline'], capture_output=True, text=True)
+            log(f"   {result.stdout.strip()}")
             return True
         else:
-            print(f"⚠️  Commit message: {result.stdout}")
+            log(f"⚠️  Commit output: {result.stdout}", "WARN")
+            log(f"⚠️  Commit stderr: {result.stderr}", "WARN")
             return False
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Git commit failed: {e}")
-        return False
     except Exception as e:
-        print(f"❌ Unexpected error in git_commit: {e}")
+        log(f"❌ Error committing: {e}", "ERROR")
+        return False
+
+def git_push():
+    """Push commits to remote"""
+    log("=" * 60)
+    log("PUSHING COMMITS TO REMOTE", "CHECK")
+    log("=" * 60)
+    
+    try:
+        result = subprocess.run(['git', 'push', 'origin', 'main'], capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            log(f"✅ Successfully pushed to remote", "SUCCESS")
+            log(f"Output: {result.stdout}")
+            return True
+        else:
+            log(f"❌ Push failed", "ERROR")
+            log(f"Output: {result.stdout}")
+            log(f"Error: {result.stderr}")
+            return False
+    except Exception as e:
+        log(f"❌ Error pushing: {e}", "ERROR")
         return False
 
 def main():
     try:
-        print("🚀 Starting DSA Automation Script...")
+        log("=" * 60)
+        log("STARTING DSA AUTOMATION SCRIPT", "START")
+        log("=" * 60)
+        
+        # Check git config first
+        if not check_git_config():
+            log("❌ Git config not set. Cannot proceed.", "ERROR")
+            return 1
+        
+        # Check repo status
+        check_repo_status()
         
         # Get current day number
         day_num = get_day_number()
-        print(f"📅 Day {day_num}")
         
         # Random number of commits (2-5)
         num_commits = random.randint(2, 5)
-        print(f"📝 Will create {num_commits} commits today")
+        log(f"Will create {num_commits} commits", "INFO")
+        
+        log("=" * 60)
+        log("CREATING COMMITS", "CHECK")
+        log("=" * 60)
         
         commits_made = 0
         
         for commit_idx in range(num_commits):
             try:
+                log(f"--- Commit {commit_idx + 1}/{num_commits} ---", "INFO")
+                
                 # Random DSA problem
                 problem = random.choice(DSA_PROBLEMS)
+                log(f"Selected problem: {problem['title']}")
                 
                 # Create solution file
                 solution_file = create_dsa_file(problem, f"{day_num}_{commit_idx + 1}")
                 
                 if solution_file is None:
-                    print(f"⚠️  Skipping commit {commit_idx + 1}")
+                    log(f"⚠️  Skipping commit {commit_idx + 1}", "WARN")
                     continue
                 
                 # Commit message with natural feel
@@ -251,32 +368,48 @@ def main():
                 commit_msg = random.choice(commit_messages)
                 
                 # Make commit
-                if git_commit(solution_file, commit_msg, day_num):
+                if git_commit(solution_file, commit_msg):
                     commits_made += 1
                 
-                # Random delay between commits (to look natural)
+                # Random delay between commits
                 if commit_idx < num_commits - 1:
                     import time
-                    time.sleep(random.randint(2, 5))
+                    time.sleep(random.randint(1, 3))
             
             except Exception as e:
-                print(f"❌ Error in commit {commit_idx + 1}: {e}")
+                log(f"❌ Error in commit {commit_idx + 1}: {e}", "ERROR")
                 continue
         
         # Update README with motivation
+        log("=" * 60)
+        log("UPDATING MOTIVATION", "CHECK")
+        log("=" * 60)
+        
         try:
             motivation = random.choice(MOTIVATIONS)
+            log(f"Motivation: {motivation}")
             update_readme(day_num, motivation)
-            git_commit("README.md", f"Day {day_num}: {motivation}", day_num)
+            git_commit("README.md", f"Day {day_num}: {motivation}")
             commits_made += 1
         except Exception as e:
-            print(f"❌ Error updating motivation: {e}")
+            log(f"❌ Error updating motivation: {e}", "ERROR")
         
-        print(f"\n✅ Script completed! Made {commits_made} commits on Day {day_num}")
+        # Check status before push
+        log("=" * 60)
+        log("STATUS BEFORE PUSH", "CHECK")
+        log("=" * 60)
+        check_repo_status()
+        
+        # Push all commits
+        git_push()
+        
+        log("=" * 60)
+        log(f"SCRIPT COMPLETED - Made {commits_made} commits on Day {day_num}", "SUCCESS")
+        log("=" * 60)
         return 0
     
     except Exception as e:
-        print(f"❌ Fatal error: {e}")
+        log(f"❌ Fatal error: {e}", "ERROR")
         import traceback
         traceback.print_exc()
         return 1

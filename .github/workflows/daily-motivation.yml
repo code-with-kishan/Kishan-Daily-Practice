@@ -31,14 +31,4 @@ jobs:
           git commit -m "Day $(date +%d-%m-%Y): DSA Practice" || true
           git push origin main || true
       
-      - run: git log --oneline -n 3          git add -A
-          git commit -m "Day $(date +%d-%m-%Y): Daily DSA Practice" || true
-      
-      - name: Push to Repository
-        run: |
-          git push origin main || true
-      
-      - name: Verify
-        run: |
-          echo "Latest commits:"
-          git log --oneline -n 5
+      - run: git log --oneline -n 3

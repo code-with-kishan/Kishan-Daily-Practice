@@ -26,7 +26,7 @@ jobs:
       - name: Configure Git
         run: |
           git config --global user.name "code-with-kishan"
-          git config --global user.email "kishan@example.com"
+          git config --global user.email "knishad0004@gmail.com"
       
       - name: Run DSA Script
         run: |

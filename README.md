@@ -2,3 +2,5 @@
 and also i add daily solution od DSA que
 **Day 2** (2026-03-31): Keep iterating, keep improving! 🔄
 
+**Day 3** (2026-04-01): Every DSA problem solved is a step closer to mastery! 💪
+

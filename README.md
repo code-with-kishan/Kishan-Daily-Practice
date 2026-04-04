@@ -11,3 +11,5 @@ and also I will add daily solution of DSA que
 
 **Day 5** (2026-04-03): Keep iterating, keep improving! 🔄
 
+**Day 6** (2026-04-04): Every commit is a victory. Celebrate your progress! 🏆
+

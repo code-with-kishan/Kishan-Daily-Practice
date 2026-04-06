@@ -15,3 +15,5 @@ and also I will add daily solution of DSA que
 
 **Day 7** (2026-04-05): Keep iterating, keep improving! 🔄
 
+**Day 8** (2026-04-06): Today's code is tomorrow's solution! 📚
+

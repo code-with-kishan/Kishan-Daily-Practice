@@ -17,3 +17,5 @@ and also I will add daily solution of DSA que
 
 **Day 8** (2026-04-06): Today's code is tomorrow's solution! 📚
 
+**Day 9** (2026-04-07): Every DSA problem solved is a step closer to mastery! 💪
+

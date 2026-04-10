@@ -23,3 +23,5 @@ and also I will add daily solution of DSA que
 
 **Day 11** (2026-04-09): Keep iterating, keep improving! 🔄
 
+**Day 12** (2026-04-10): One step at a time. You're building something great! ✨
+

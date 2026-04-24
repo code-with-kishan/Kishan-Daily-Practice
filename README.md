@@ -51,3 +51,5 @@ and also I will add daily solution of DSA que
 
 **Day 25** (2026-04-23): One step at a time. You're building something great! ✨
 
+**Day 26** (2026-04-24): Practice makes perfect. Keep pushing! 🎯
+

@@ -71,3 +71,5 @@ and also I will add daily solution of DSA que
 
 **Day 35** (2026-05-03): Consistency beats perfection. Keep grinding! 🚀
 
+**Day 36** (2026-05-04): Consistency beats perfection. Keep grinding! 🚀
+

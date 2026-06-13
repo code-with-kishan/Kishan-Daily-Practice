@@ -151,3 +151,5 @@ and also I will add daily solution of DSA que
 
 **Day 75** (2026-06-12): Every commit is a victory. Celebrate your progress! 🏆
 
+**Day 76** (2026-06-13): Every commit is a victory. Celebrate your progress! 🏆
+

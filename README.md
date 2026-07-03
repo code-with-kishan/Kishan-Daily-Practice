@@ -191,3 +191,5 @@ and also I will add daily solution of DSA que
 
 **Day 95** (2026-07-02): Every commit is a victory. Celebrate your progress! 🏆
 
+**Day 96** (2026-07-03): Every commit is a victory. Celebrate your progress! 🏆
+

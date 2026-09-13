@@ -335,3 +335,5 @@ and also I will add daily solution of DSA que
 
 **Day 167** (2026-09-12): One step at a time. You're building something great! ✨
 
+**Day 168** (2026-09-13): Algorithms are the language of problem solving! 🧠
+
